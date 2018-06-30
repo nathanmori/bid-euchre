@@ -74,4 +74,15 @@ class UserPlayer(Player):
         pass
 
     def bid(self, bids):
+        print(bids)
+
+        tricks = input('tricks >')
+        call = input('call >')
+        bid = Bid(tricks, call)
+
+        last_bid_tricks = get_last_bid_tricks(bids)
+        if bid.tricks > last_bid_tricks:
+            return bid
+        else:
+            return None
         pass
