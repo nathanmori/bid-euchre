@@ -8,6 +8,9 @@ class Player:
         self.team = team
         self.cards = []
 
+    def deal(self, card):
+        self.cards.append(card)
+
     @abstractmethod
     def play_trick(self, played_cards):
         pass

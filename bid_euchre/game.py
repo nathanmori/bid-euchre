@@ -65,8 +65,10 @@ class Game:
 
     def play_hand(self, players):
         deck = Deck(min_rank=7)
-        for player in players:
-            player.cards = [deck.draw() for _ in range(N_TRICKS)]
+        for _ in range(N_TRICKS):
+            for player in players:
+                card = deck.draw()
+                player.deal(card)
 
         bids = []
         for player in players:
