@@ -2,7 +2,7 @@
 
 import random
 
-from bid_euchre.deck import Deck
+from bid_euchre.deck import RANKS, Deck
 from bid_euchre.player import CPUPlayer, UserPlayer
 
 
@@ -11,7 +11,7 @@ N_PLAYERS = 4
 WIN_SCORE = 32
 
 
-rank_i = {rank: i for i, rank in enumerate(Deck.ranks)}
+rank_i = {rank: i for i, rank in enumerate(RANKS)}
 
 
 def beats(rank, other_rank, low):
@@ -56,31 +56,36 @@ class Game:
 
     def __init__(self):
         self.players = [
-            UserPlayer(0),
-            CPUPlayer(1),
-            CPUPlayer(0),
-            CPUPlayer(1),
+            UserPlayer(self, 0),
+            CPUPlayer(self, 1),
+            CPUPlayer(self, 0),
+            CPUPlayer(self, 1),
         ]
         self.team_scores = [0, 0]
 
     def play_hand(self, players):
+        # deal
         deck = Deck(min_rank=7)
         for _ in range(N_TRICKS):
             for player in players:
                 card = deck.draw()
                 player.deal(card)
 
+        # bid
         bids = []
         for player in players:
-            bids.append(player.bid(bids))
+            bid = player.bid(bids)
+            bids.append(bid)
         for player, bid in list(zip(players, bids))[::-1]:
             if bid is not None:
-                bid, call = bid
-                if call == 'low':
+                if bid.call == 'high':
+                    trump = None
+                    low = False
+                elif bid.call == 'low':
                     trump = None
                     low = True
                 else:
-                    trump = call
+                    trump = bid.call
                     low = False
                 calling_team = player.team
                 noncalling_team = (calling_team + 1) % 2
@@ -88,22 +93,26 @@ class Game:
         else:
             raise ValueError('no bid')
 
+        # play tricks
         team_tricks = [0, 0]
         for _ in range(N_TRICKS):
             trick_cards = []
             for player in players:
                 trick_cards.append(player.play_trick(trick_cards))
 
-            taking_i = get_taking_i(trick_cards, trump)
+            taking_i = get_taking_i(trick_cards, trump, low)
             taking_player = players[taking_i]
             taking_team = taking_player.team
             team_tricks[taking_team] += 1
 
             players = players[taking_i:] + players[:taking_i]
 
-        if team_tricks[calling_team] >= bid:
-            calling_team
-        team_tricks
+        # update score
+        if team_tricks[calling_team] >= bid.tricks:
+            self.team_scores[calling_team] += team_tricks[calling_team]
+        else:
+            self.team_scores[calling_team] -= bid.tricks
+        self.team_scores[noncalling_team] += team_tricks[noncalling_team]
 
     def play(self):
         first = random.choice(range(N_PLAYERS))
