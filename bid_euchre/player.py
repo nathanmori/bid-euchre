@@ -26,18 +26,15 @@ class Player(ABC):
         self.cards.append(card)
 
     @abstractmethod
-    def play_trick(self, played_cards):
+    def bid(self, bids):
         pass
 
     @abstractmethod
-    def bid(self, bids):
+    def play_trick(self, played_cards):
         pass
 
 
 class CPUPlayer(Player):
-
-    def play_trick(self, played_cards):
-        pass
 
     def bid(self, bids):
 
@@ -67,11 +64,17 @@ class CPUPlayer(Player):
         else:
             return None
 
+    def play_trick(self, played_cards):
+        if played_cards:
+            led_card = played_cards[0]
+        for card_i, card in enumerate(self.cards):
+            if card.suit == led_card.suit:
+                return self.cards.pop(card_i)
+        else:
+            return self.cards.pop()
+
 
 class UserPlayer(Player):
-
-    def play_trick(self, played_cards):
-        pass
 
     def bid(self, bids):
         print(bids)
@@ -85,4 +88,7 @@ class UserPlayer(Player):
             return bid
         else:
             return None
+        pass
+
+    def play_trick(self, played_cards):
         pass
